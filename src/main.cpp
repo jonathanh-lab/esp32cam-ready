@@ -42,7 +42,7 @@ void setup()
 	digitalWrite(LED_BUILTIN, false);
 
 	log_i("Initialize the camera");
-	esp32cam_aithinker_config.frame_size = FRAMESIZE_UXGA;
+	esp32cam_aithinker_config.frame_size = FRAMESIZE_SVGA; //FRAMESIZE_QVGA; //FRAMESIZE_VGA; //FRAMESIZE_UXGA;
 	if (cam.init(esp32cam_aithinker_config) != ESP_OK)
 		log_e("Initializing the camera failed");
 
