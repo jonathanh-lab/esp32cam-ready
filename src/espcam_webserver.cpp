@@ -84,16 +84,30 @@ void espcam_webserver::handle_jpg_stream()
 						"Content-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n");
 
 	auto wifi_client = server_.client();
+
 	do
 	{
-		cam_.run();
-		if (!wifi_client.connected())
-			break;
+		const auto msec_per_frame = 500; // 2 fps.
+		static auto last_image = millis();
+		auto now = millis();
+		if (now > last_image + msec_per_frame || now < last_image) {
+			auto before_cam = millis();
+			cam_.run();
+			now = millis();
+			auto frame_elapsed = now - last_image;
+			auto cam_elapsed = now - before_cam;
+			last_image = now;
+			static const char* red = "\e[31m";
+			static const char* dflt = "\e[0m";
+			log_i("after cam_.run(), frame time: %s%u%s, cam time: %u", (frame_elapsed > msec_per_frame * 1.5 ? red : dflt), frame_elapsed, dflt, cam_elapsed);
+			if (!wifi_client.connected())
+				break;
 
-		server_.sendContent("--frame\r\n"
-							"Content-Type: image/jpeg\r\n\r\n");
-		wifi_client.write(reinterpret_cast<char *>(cam_.getfb()), cam_.getSize());
-		server_.sendContent("\r\n");
+			server_.sendContent("--frame\r\n"
+								"Content-Type: image/jpeg\r\n\r\n");
+			wifi_client.write(reinterpret_cast<char *>(cam_.getfb()), cam_.getSize());
+			server_.sendContent("\r\n");
+		}
 	} while (wifi_client.connected());
 }
 
