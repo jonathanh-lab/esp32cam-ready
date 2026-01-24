@@ -20,7 +20,7 @@ String get_mac_address()
 	return mac;
 }
 
-auto instance_name = String(app_name) + "-" + get_mac_address();
+auto instance_name = String(app_name);//// + "-" + get_mac_address();
 
 OV2640 cam;
 espcam_webserver espcam_web(cam, instance_name);
