@@ -23,6 +23,7 @@ void espcam_webserver::begin()
 	log_i("Starting web server");
 	server_.begin();
 
+	log_i("mdns name: %s", instance_name_.c_str());
 	MDNS.begin(instance_name_.c_str());
 	// Add service to MmNS - http
 	MDNS.addService("http", "tcp", 80);
@@ -91,15 +92,13 @@ void espcam_webserver::handle_jpg_stream()
 		static auto last_image = millis();
 		auto now = millis();
 		if (now > last_image + msec_per_frame || now < last_image) {
-			auto before_cam = millis();
 			cam_.run();
 			now = millis();
 			auto frame_elapsed = now - last_image;
-			auto cam_elapsed = now - before_cam;
 			last_image = now;
 			static const char* red = "\e[31m";
 			static const char* dflt = "\e[0m";
-			log_i("after cam_.run(), frame time: %s%u%s, cam time: %u", (frame_elapsed > msec_per_frame * 1.5 ? red : dflt), frame_elapsed, dflt, cam_elapsed);
+			log_i("interframe delay: %s%u%s", (frame_elapsed > msec_per_frame * 1.5 ? red : dflt), frame_elapsed, dflt);
 			if (!wifi_client.connected())
 				break;
 
