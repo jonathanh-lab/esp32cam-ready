@@ -133,7 +133,7 @@ void wifi_provisioning::handle_root_post()
     WiFi.begin(ssid.c_str(), password.c_str());
     WiFi.setAutoReconnect(true);
 		Preferences prefs;
-		prefs.begin("esp32cam-Ready", false);
+		prefs.begin("esp32cam", false);
 		String storedName = prefs.getString("name", "");
 		if (name != storedName) {
 			log_i("saving name: %s", name.c_str());

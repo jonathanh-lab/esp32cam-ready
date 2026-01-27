@@ -25,7 +25,7 @@ void espcam_webserver::begin()
 	server_.begin();
 
 	Preferences prefs;
-	prefs.begin("esp32cam-Ready", false);
+	prefs.begin("esp32cam", false);
 	String name = prefs.getString("name", "");
 	prefs.end();
 	log_i("mdns name: %s", name.c_str());
