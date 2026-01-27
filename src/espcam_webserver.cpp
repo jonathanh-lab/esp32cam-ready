@@ -1,6 +1,7 @@
 #include <esp32-hal-log.h>
 #include <espcam_webserver.h>
 #include <ESPmDNS.h>
+#include <Preferences.h>
 
 espcam_webserver::espcam_webserver(OV2640 &cam, const String &instance_name)
 	: instance_name_(instance_name), cam_(cam), rtsp_server_(cam)
@@ -23,8 +24,12 @@ void espcam_webserver::begin()
 	log_i("Starting web server");
 	server_.begin();
 
-	log_i("mdns name: %s", instance_name_.c_str());
-	MDNS.begin(instance_name_.c_str());
+	Preferences prefs;
+	prefs.begin("esp32cam-Ready", false);
+	String name = prefs.getString("name", "");
+	prefs.end();
+	log_i("mdns name: %s", name.c_str());
+	MDNS.begin(name.c_str());
 	// Add service to MmNS - http
 	MDNS.addService("http", "tcp", 80);
 }

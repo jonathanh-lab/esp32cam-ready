@@ -1,4 +1,5 @@
 #include "wifi_provisioning.h"
+#include "Preferences.h"
 
 wifi_provisioning::wifi_provisioning(const String &instance_name, const String &base_url /* = "/provisioning" */)
     : instance_name_(instance_name), base_url_(base_url)
@@ -103,6 +104,9 @@ void wifi_provisioning::handle_root_get()
         "<label for=\"password\">Password:</label>"
         "<input name=\"password\" type=\"password\">"
         "<br />"
+        "<label for=\"name\">Name:</label>"
+        "<input name=\"name\" type=\"text\">"
+        "<br />"
         "<input type=\"submit\" value=\"Submit\">"
         "</form>"
         "</body>"
@@ -114,8 +118,9 @@ void wifi_provisioning::handle_root_get()
 void wifi_provisioning::handle_root_post()
 {
     log_i("handle_root_post");
-    String ssid, password;
-    if (!server_.hasArg("ssid") || !server_.hasArg("password") || (ssid = server_.arg("ssid")) == nullptr || (password = server_.arg("password")) == nullptr)
+    String ssid, password, name;
+    if (!server_.hasArg("ssid") || !server_.hasArg("password") || !server_.hasArg("name") ||
+       (ssid = server_.arg("ssid")) == nullptr || (password = server_.arg("password")) == nullptr || (name = server_.arg("name")) == nullptr)
     {
         server_.send(400, "text/plain", "400: Invalid Request");
         return;
@@ -127,6 +132,14 @@ void wifi_provisioning::handle_root_post()
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), password.c_str());
     WiFi.setAutoReconnect(true);
+		Preferences prefs;
+		prefs.begin("esp32cam-Ready", false);
+		String storedName = prefs.getString("name", "");
+		if (name != storedName) {
+			log_i("saving name: %s", name.c_str());
+			prefs.putString("name", name);
+		}
+		prefs.end();
 
     auto connection_result = (wl_status_t)WiFi.waitForConnectResult();
     log_i("Connection result: %d", connection_result);
