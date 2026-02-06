@@ -4,7 +4,7 @@
 #include <Preferences.h>
 
 espcam_webserver::espcam_webserver(OV2640 &cam, const String &instance_name)
-	: instance_name_(instance_name), cam_(cam), rtsp_server_(cam)
+	: instance_name_(instance_name), cam_(cam)
 {
 	// Set up required URL handlers on the web server
 	server_.on("/", HTTP_GET, std::bind(&espcam_webserver::handle_root, this));
@@ -18,9 +18,6 @@ espcam_webserver::espcam_webserver(OV2640 &cam, const String &instance_name)
 
 void espcam_webserver::begin()
 {
-	log_i("Starting rtsp_server");
-	rtsp_server_.begin();
-
 	log_i("Starting web server");
 	server_.begin();
 
@@ -36,7 +33,6 @@ void espcam_webserver::begin()
 
 void espcam_webserver::doLoop()
 {
-	rtsp_server_.doLoop();
 	server_.handleClient();
 }
 
@@ -57,10 +53,6 @@ void espcam_webserver::handle_root()
 		"<body>"
 		"<div class=\"container\">"
 		"<h2 class=\"text-center\">ESP32CAM</h2>"
-		"<div class=\"alert alert-primary\" role=\"alert\">"
-		"rtsp stream available at: <a class=\"alert-link\" href=\"rtsp://" +
-		instance_name_ + ".local:554/mjpeg/1\">rtsp://" + instance_name_ + ".local:554/mjpeg/1</a>"
-																		   "</div>"
 																		   "<div class=\"list-group\">"
 																		   "<button type=\"button\" class=\"list-group-item list-group-item-action active\">Options</button>"
 																		   "<a class=\"list-group-item list-group-item-action\" href=\"jpg\">Single frame</a>"
@@ -93,7 +85,7 @@ void espcam_webserver::handle_jpg_stream()
 
 	do
 	{
-		const auto msec_per_frame = 500; // 2 fps.
+		const auto msec_per_frame = 332; // ~3 fps.
 		static auto last_image = millis();
 		auto now = millis();
 		if (now > last_image + msec_per_frame || now < last_image) {

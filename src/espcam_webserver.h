@@ -2,7 +2,6 @@
 
 #include <WebServer.h>
 #include <OV2640.h>
-#include <rtsp_server.h>
 #include <WiFi.h>
 
 class espcam_webserver
@@ -10,7 +9,6 @@ class espcam_webserver
 private:
 	const String &instance_name_;
 	OV2640 &cam_;
-	rtsp_server rtsp_server_;
 
 	WebServer server_;
 
