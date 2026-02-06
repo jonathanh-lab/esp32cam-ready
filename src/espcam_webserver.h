@@ -12,6 +12,9 @@ private:
 
 	WebServer server_;
 
+	String serialData_;
+	static const unsigned SERIAL_SIZE = 1000;
+
 	void handle_root();
 	void handle_reset();
 	void handle_jpg_stream();

@@ -29,10 +29,26 @@ void espcam_webserver::begin()
 	MDNS.begin(name.c_str());
 	// Add service to MmNS - http
 	MDNS.addService("http", "tcp", 80);
+	Serial.begin(115200);
+	serialData_.reserve(SERIAL_SIZE * 2);
 }
 
 void espcam_webserver::doLoop()
 {
+	if (Serial.available() > 0) {
+		String serialData = Serial.readString();
+		log_i("received: %s", serialData.c_str());
+		if (serialData.indexOf('\n') >= 0) {
+			serialData += "<br>";
+		}
+		int newLen = serialData.length();
+		int len = serialData_.length();
+		int combinedLen = len + newLen;
+		if (combinedLen > SERIAL_SIZE) {
+			serialData_ = serialData_.substring(combinedLen - SERIAL_SIZE, len);
+		}
+		serialData_ += serialData;
+	}
 	server_.handleClient();
 }
 
@@ -42,6 +58,7 @@ void espcam_webserver::handle_root()
 	String html(
 		"<!DOCTYPE html>"
 		"<html lang=\"en\">"
+		"<meta http-equiv=\"refresh\" content=\"5\">"
 		"<head>"
 		"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\"/>"
 		"<meta http-equiv=\"Pragma\" content=\"no-cache\">"
@@ -62,8 +79,10 @@ void espcam_webserver::handle_root()
 		"<a class=\"list-group-item list-group-item-action\" href=\"lightoff\">Light off</a>"
 		"<a class=\"list-group-item list-group-item-action list-group-item-danger\" href=\"reset\">Reset configuration and restart</a>"
 		"</div>"
-		"<div class=\"text-frame\">"
-		"Log text goes here"
+		"<div class=\"text-frame\">");
+	html += serialData_;
+	html += String(
+		""
 		"</div>"
 		"</div>"
 		"</body>"
